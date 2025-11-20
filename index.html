@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <title>Piatto Virtuale – Grigliata</title>
+  <style>
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f3f3f3;
+      color: #333;
+    }
+
+    h1, h2 {
+      text-align: center;
+      margin-top: 10px;
+    }
+
+    .page-container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .top-bar {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 15px;
+      flex-wrap: wrap;
+    }
+
+    .top-bar input[type="text"],
+    .top-bar input[type="email"] {
+      padding: 8px 10px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      min-width: 230px;
+    }
+
+    .top-bar button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      background: #4caf50;
+      color: white;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .top-bar button:hover {
+      background: #45a045;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1.1fr 1.2fr;
+      gap: 20px;
+      align-items: flex-start;
+    }
+
+    /* Colonna alimenti */
+    .food-list {
+      background: #ffffff;
+      border-radius: 10px;
+      padding: 15px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    .food-list h2 {
+      margin-top: 0;
+    }
+
+    .food-items {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .food-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 10px;
+      border-radius: 8px;
+      background: #f9f9f9;
+      border: 1px solid #e0e0e0;
+      cursor: grab;
+    }
+
+    .food-item:active {
+      cursor: grabbing;
+    }
+
+    .food-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .food-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+      flex-shrink: 0;
+    }
+
+    /* Icone stilizzate (puoi sostituirle con immagini reali) */
+    .icon-carne {
+      background: radial-gradient(circle at 30% 30%, #ffb6a1, #b2402f);
+    }
+
+    .icon-salsiccia {
+      background: radial-gradient(circle at 30% 30%, #ffc9a6, #a8423a);
+    }
+
+    .icon-polpetta {
+      background: radial-gradient(circle at 30% 30%, #d08a4b, #7b3c1a);
+    }
+
+    .icon-pollo {
+      background: radial-gradient(circle at 30% 30%, #ffe5c5, #c58b42);
+    }
+
+    .icon-pane {
+      background: radial-gradient(circle at 30% 30%, #ffe2a8, #c79640);
+    }
+
+    .icon-insalata {
+      background: radial-gradient(circle at 30% 30%, #e4ffd8, #3e7f39);
+    }
+
+    .food-name {
+      font-weight: 600;
+    }
+
+    .food-controls {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .food-controls button {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .food-controls button.minus {
+      background: #ffcccc;
+    }
+
+    .food-controls button.plus {
+      background: #c8e6c9;
+    }
+
+    .food-controls button:hover {
+      filter: brightness(0.95);
+    }
+
+    .food-qty {
+      min-width: 20px;
+      text-align: center;
+      font-weight: 600;
+    }
+
+    .hint {
+      font-size: 0.85rem;
+      color: #666;
+      margin-top: 10px;
+    }
+
+    /* Colonna piatto */
+    .plate-area {
+      background: #ffffff;
+      border-radius: 10px;
+      padding: 15px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    .plate-wrapper {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .plate {
+      position: relative;
+      width: 380px;
+      height: 380px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #ffffff, #e3e3e3);
+      box-shadow:
+        0 10px 18px rgba(0,0,0,0.25),
+        inset 0 3px 6px rgba(255,255,255,0.8),
+        inset 0 -3px 6px rgba(0,0,0,0.1);
+      border: 6px solid #f5f5f5;
+      overflow: hidden;
+    }
+
+    .plate-inner {
+      position: absolute;
+      top: 12%;
+      left: 12%;
+      right: 12%;
+      bottom: 12%;
+      border-radius: 50%;
+      background: radial-gradient(circle, #fafafa, #e0e0e0);
+      border: 3px solid rgba(255,255,255,0.7);
+    }
+
+    .drop-zone {
+      position: absolute;
+      inset: 16%;
+      border-radius: 50%;
+      border: 2px dashed rgba(0,0,0,0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 10px;
+      font-size: 0.9rem;
+      color: #777;
+    }
+
+    .plate.drag-over .drop-zone {
+      border-color: #4caf50;
+      background: rgba(76,175,80,0.05);
+      color: #333;
+    }
+
+    .plate-food-dot {
+      position: absolute;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      opacity: 0.95;
+      pointer-events: none;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .plate-summary {
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 8px;
+      background: #fafafa;
+      border: 1px solid #e0e0e0;
+      font-family: "Courier New", monospace;
+      white-space: pre-line;
+      font-size: 0.95rem;
+    }
+
+    .plate-summary-title {
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+
+    @media (max-width: 900px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+      .plate {
+        width: 300px;
+        height: 300px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-container">
+    <h1>Piatto Virtuale – Grigliata</h1>
+
+    <div class="top-bar">
+      <input type="text" id="username" placeholder="Nome utente (es. Giovanni)" />
+      <input type="email" id="recipientEmail" placeholder="Email destinatario" value="tua_email@example.com" />
+      <button id="sendEmailBtn">Invia piatto via email</button>
+    </div>
+
+    <div class="layout">
+      <!-- Colonna alimenti -->
+      <section class="food-list">
+        <h2>Alimenti disponibili</h2>
+        <p class="hint">
+          Trascina un alimento nel piatto oppure usa i pulsanti + e – per modificare le quantità.
+        </p>
+        <div class="food-items" id="foodItems">
+          <!-- Generati da JS -->
+        </div>
+      </section>
+
+      <!-- Colonna piatto -->
+      <section class="plate-area">
+        <h2>Piatto virtuale</h2>
+        <div class="plate-wrapper">
+          <div class="plate" id="plate">
+            <div class="plate-inner"></div>
+            <div class="drop-zone" id="dropZone">
+              Trascina qui gli alimenti per comporre il piatto
+            </div>
+          </div>
+        </div>
+        <div class="plate-summary" id="plateSummary">
+          <div class="plate-summary-title">Riepilogo piatto:</div>
+          <div id="plateText">(nessun alimento selezionato)</div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    // Definizione alimenti
+    const foods = [
+      { id: "carne",     name: "fetta di carne",       iconClass: "icon-carne" },
+      { id: "salsiccia", name: "salsiccia",            iconClass: "icon-salsiccia" },
+      { id: "polpetta",  name: "polpetta di cavallo",  iconClass: "icon-polpetta" },
+      { id: "pollo",     name: "petto di pollo",       iconClass: "icon-pollo" },
+      { id: "pane",      name: "pane",                 iconClass: "icon-pane" },
+      { id: "insalata",  name: "insalata",             iconClass: "icon-insalata" }
+    ];
+
+    // Stato delle quantità
+    const quantities = {};
+    foods.forEach(f => quantities[f.id] = 0);
+
+    // Elementi principali
+    const foodItemsContainer = document.getElementById("foodItems");
+    const plate = document.getElementById("plate");
+    const dropZone = document.getElementById("dropZone");
+    const plateTextDiv = document.getElementById("plateText");
+    const sendEmailBtn = document.getElementById("sendEmailBtn");
+    const usernameInput = document.getElementById("username");
+    const recipientEmailInput = document.getElementById("recipientEmail");
+
+    // Crea lista alimenti (DOM)
+    function renderFoodList() {
+      foodItemsContainer.innerHTML = "";
+      foods.forEach(food => {
+        const item = document.createElement("div");
+        item.className = "food-item";
+        item.draggable = true;
+        item.dataset.foodId = food.id;
+
+        const left = document.createElement("div");
+        left.className = "food-left";
+
+        const icon = document.createElement("div");
+        icon.className = "food-icon " + food.iconClass;
+
+        const nameSpan = document.createElement("span");
+        nameSpan.className = "food-name";
+        nameSpan.textContent = food.name;
+
+        left.appendChild(icon);
+        left.appendChild(nameSpan);
+
+        const controls = document.createElement("div");
+        controls.className = "food-controls";
+
+        const minusBtn = document.createElement("button");
+        minusBtn.textContent = "-";
+        minusBtn.className = "minus";
+        minusBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          changeQuantity(food.id, -1);
+        });
+
+        const qtySpan = document.createElement("span");
+        qtySpan.className = "food-qty";
+        qtySpan.id = "qty-" + food.id;
+        qtySpan.textContent = "0";
+
+        const plusBtn = document.createElement("button");
+        plusBtn.textContent = "+";
+        plusBtn.className = "plus";
+        plusBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          changeQuantity(food.id, +1);
+        });
+
+        controls.appendChild(minusBtn);
+        controls.appendChild(qtySpan);
+        controls.appendChild(plusBtn);
+
+        item.appendChild(left);
+        item.appendChild(controls);
+
+        // Drag & drop
+        item.addEventListener("dragstart", (e) => {
+          e.dataTransfer.setData("text/plain", food.id);
+        });
+
+        foodItemsContainer.appendChild(item);
+      });
+    }
+
+    // Aggiorna quantità e riepilogo
+    function changeQuantity(foodId, delta) {
+      quantities[foodId] = Math.max(0, (quantities[foodId] || 0) + delta);
+      const qtySpan = document.getElementById("qty-" + foodId);
+      if (qtySpan) {
+        qtySpan.textContent = quantities[foodId];
+      }
+      updatePlateText();
+    }
+
+    // Testo del piatto nel formato richiesto
+    function getPlateText() {
+      const lines = [];
+      lines.push("Piatto virtuale:");
+      let hasItems = false;
+      foods.forEach(food => {
+        const q = quantities[food.id];
+        if (q > 0) {
+          hasItems = true;
+          lines.push(q + " x " + food.name);
+        }
+      });
+      if (!hasItems) {
+        lines.push("(nessun alimento selezionato)");
+      }
+      return lines.join("\n");
+    }
+
+    function updatePlateText() {
+      plateTextDiv.textContent = getPlateText();
+    }
+
+    // Drag & drop sulla zona del piatto
+    plate.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      plate.classList.add("drag-over");
+    });
+
+    plate.addEventListener("dragleave", (e) => {
+      // lascio solo quando si esce davvero dalla plate
+      if (!plate.contains(e.relatedTarget)) {
+        plate.classList.remove("drag-over");
+      }
+    });
+
+    plate.addEventListener("drop", (e) => {
+      e.preventDefault();
+      plate.classList.remove("drag-over");
+      const foodId = e.dataTransfer.getData("text/plain");
+      if (!foodId) return;
+
+      // Aumenta la quantità
+      changeQuantity(foodId, +1);
+
+      // Posizione del puntino sul piatto (decorativo)
+      createFoodDotOnPlate(foodId, e);
+    });
+
+    // Crea un "puntino" dell'alimento sul piatto per un minimo effetto realistico
+    function createFoodDotOnPlate(foodId, dropEvent) {
+      const rect = plate.getBoundingClientRect();
+      const x = dropEvent.clientX - rect.left;
+      const y = dropEvent.clientY - rect.top;
+
+      const dot = document.createElement("div");
+      dot.className = "plate-food-dot";
+
+      const food = foods.find(f => f.id === foodId);
+      if (food) {
+        // riuso la stessa classe icona per il gradiente interno
+        dot.classList.add(food.iconClass);
+      }
+
+      // Converti posizione in percentuale (per restare dentro il piatto anche se ridimensionato)
+      const offsetX = (x / rect.width) * 100;
+      const offsetY = (y / rect.height) * 100;
+
+      dot.style.left = `calc(${offsetX}% - 16px)`;
+      dot.style.top  = `calc(${offsetY}% - 16px)`;
+
+      plate.appendChild(dot);
+
+      // Opzionale: dopo un po' potremmo sfumare o tenere tutto
+      // (qui li lasciamo tutti)
+    }
+
+    // Gestione click sul bottone "Invia piatto via email"
+    sendEmailBtn.addEventListener("click", () => {
+      const username = usernameInput.value.trim() || "Utente anonimo";
+      const recipient = recipientEmailInput.value.trim() || "danielespampinato00@gmail.com";
+
+      const subject = "Composizione piatto virtuale";
+      const bodyLines = [];
+      bodyLines.push("Nome utente: " + username);
+      bodyLines.push("");
+      bodyLines.push(getPlateText());
+
+      const body = bodyLines.join("\n");
+      const mailtoUrl =
+        "mailto:" + encodeURIComponent(recipient) +
+        "?subject=" + encodeURIComponent(subject) +
+        "&body=" + encodeURIComponent(body);
+
+      // Apre il client di posta con il messaggio compilato
+      window.location.href = mailtoUrl;
+    });
+
+    // Inizializzazione
+    renderFoodList();
+    updatePlateText();
+  </script>
+</body>
+</html>
